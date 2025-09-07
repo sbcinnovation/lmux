@@ -14,15 +14,40 @@ An open source session manager for tmux, which allows users to manage tmux sessi
 
 ## Install
 
-Build from source (requires Go 1.22+):
+### macOS (Homebrew)
+
+```bash
+brew install sbcinnovation/tap/lmux
+```
+
+### Linux (Debian/Ubuntu and RPM-based)
+
+We publish `.deb` and `.rpm` packages on GitHub Releases. Download the latest from the releases page and install:
+
+```bash
+# Debian/Ubuntu
+sudo dpkg -i lmux_*.deb || sudo apt -f install
+
+# RHEL/CentOS/Fedora
+sudo rpm -i lmux_*.rpm
+```
+
+Alternatively, download the tarball from releases and place the `lmux` binary in your `PATH`.
+
+### Windows (Scoop)
+
+```powershell
+scoop bucket add sbc https://github.com/sbcinnovation/scoop-bucket
+scoop install sbc/lmux
+```
+
+### From source (Go 1.22+)
 
 ```bash
 git clone https://github.com/sbcinnovation/lmux
-cd sbc-lmux
-make install
-OR
-go build -o lmux ./cmd/lmux
-# Place binary in PATH
+cd lmux
+go build -ldflags "-s -w" -o lmux ./cmd/lmux
+sudo mv ./lmux /usr/local/bin/  # or any directory in PATH
 ```
 
 ## Quickstart.
@@ -85,24 +110,16 @@ Notes:
   - `name = { layout = L, root = PATH, panes = [...] }`
 - Panes accept string (single command), array (multiple commands), or `{ title = commands }`.
 
-## Differences from tmuxinator (for now)
 
-- No ERB processing in TOML.
-- Project/window hooks (on_project_start, pre_window, etc.) not implemented yet.
-- `tmux_options` are parsed but not passed to tmux invocation yet.
-- Layout handling is best-effort; panes default to tiled after splits.
-- Wemux and socket options are not supported yet.
-- Append-to-existing-session is not supported yet.
+## Updates
 
-## Roadmap / TODO
+Check your installed version and optionally check for updates:
 
-- Apply `tmux_options` and socket options at tmux invocation time.
-- Implement project/window hooks (on_project_start/stop/exit; pre_window).
-- Add ERB-like variable interpolation or Go templating (optional).
-- Improve layout support, synchronize panes before/after.
-- Support selecting startup window/pane by name robustly.
-- Implement stop/kill and restart commands.
-- Support wemux/byobu.
+```bash
+lmux version            # prints version
+lmux version --check    # queries GitHub for newer release
+lmux version -v         # include build metadata (commit/date)
+```
 
 ## License
 
