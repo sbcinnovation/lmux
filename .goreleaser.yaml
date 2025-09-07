@@ -17,8 +17,10 @@ builds:
     goarch:
       - amd64
       - arm64
+    # ldflags:
+    #   - -s -w -X main.version={{ .Version }} -X github.com/sbcinnovation/lmux/lmux/internal/version.Commit={{ .Commit }} -X github.com/sbcinnovation/lmux/lmux/internal/version.Date={{ .Date }} -X github.com/sbcinnovation/lmux/lmux/internal/version.BuiltBy=goreleaser
     ldflags:
-      - -s -w -X main.version={{ .Version }} -X github.com/sbcinnovation/lmux/lmux/internal/version.Commit={{ .Commit }} -X github.com/sbcinnovation/lmux/lmux/internal/version.Date={{ .Date }} -X github.com/sbcinnovation/lmux/lmux/internal/version.BuiltBy=goreleaser
+      - -s -w -X github.com/sbcinnovation/lmux/internal/version.Version={{ .Version }} -X github.com/sbcinnovation/lmux/internal/version.Commit={{ .Commit }} -X github.com/sbcinnovation/lmux/internal/version.Date={{ .Date }} -X github.com/sbcinnovation/lmux/internal/version.BuiltBy=goreleaser
 
 archives:
   - id: archive
@@ -56,13 +58,14 @@ brews:
     test: |
       system "#{bin}/lmux", "version"
 
-scoop:
-  bucket:
-    owner: sbcinnovation
-    name: scoop-bucket
-  homepage: https://github.com/sbcinnovation/lmux
-  description: "A fast, simple, cross-platform tmux session manager"
-  license: MIT
+scoops:
+  - name: lmux
+    repository:
+      owner: sbcinnovation
+      name: scoop-bucket
+    homepage: https://github.com/sbcinnovation/lmux
+    description: "A fast, simple, cross-platform tmux session manager"
+    license: MIT
 
 nfpms:
   - id: linux-packages
