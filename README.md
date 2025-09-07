@@ -124,6 +124,10 @@ lmux version --check    # queries GitHub for newer release
 lmux version -v         # include build metadata (commit/date)
 ```
 
+## Contributing
+
+We welcome pull requests. If you're passionate about lmux and want to help long-term, we're open to adding maintainers, feel free to open an issue to introduce yourself!
+
 ## License
 
 MIT
