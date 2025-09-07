@@ -17,7 +17,7 @@ An open source session manager for tmux, which allows users to manage tmux sessi
 Build from source (requires Go 1.22+):
 
 ```bash
-git clone https://github.com/sky/sbc-lmux
+git clone https://github.com/sbcinnovation/lmux
 cd sbc-lmux
 make install
 OR

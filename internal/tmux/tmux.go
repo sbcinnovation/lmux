@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	cfg "github.com/sky/sbc-lmux/lmux/internal/config"
+	cfg "github.com/sbcinnovation/lmux/lmux/internal/config"
 )
 
 // CheckTmuxInstalled verifies tmux is installed.

@@ -1,4 +1,4 @@
-module github.com/sky/sbc-lmux/lmux
+module github.com/sbcinnovation/lmux/lmux
 
 go 1.22
 
