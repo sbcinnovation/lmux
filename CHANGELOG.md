@@ -13,7 +13,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - `lmux version --check` to query latest GitHub release.
 - Core commands: `init`, `edit`, `editor`, `list`, `start`, `doctor`.
 
-## [0.1.0]
+## [0.8.0]
 
 ### Added
 
