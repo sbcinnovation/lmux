@@ -1,0 +1,7 @@
+./lmux
+/bin
+
+/tmpdir
+/__debug*
+
+.DS_Store
