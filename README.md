@@ -1,6 +1,6 @@
 # 🚀 lmux: A Fast Simple Cross Platform tmux Session Manager 🖥️
 
-*lmux = Load tmux*
+_lmux = Load tmux_
 
 ![lmux example](docs/assets/mycoolproj.png)
 
@@ -26,7 +26,7 @@ brew install sbcinnovation/tap/lmux
 
 ### Linux (Debian/Ubuntu and RPM-based)
 
-We publish `.deb` and `.rpm` packages on GitHub Releases. Download the latest from the releases page and install:
+We publish `.deb` and `.rpm` packages on [GitHub Releases](https://github.com/sbcinnovation/lmux/releases). Download the latest from the [releases page](https://github.com/sbcinnovation/lmux/releases) and install:
 
 ```bash
 # Debian/Ubuntu
@@ -36,7 +36,7 @@ sudo dpkg -i lmux_*.deb || sudo apt -f install
 sudo rpm -i lmux_*.rpm
 ```
 
-Alternatively, download the tarball from releases and place the `lmux` binary in your `PATH`.
+Alternatively, download the tarball from [releases](https://github.com/sbcinnovation/lmux/releases) and place the `lmux` binary in your `PATH`.
 
 ### Windows (Scoop)
 
