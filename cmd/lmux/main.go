@@ -9,10 +9,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	cfg "github.com/sbcinnovation/lmux/lmux/internal/config"
-	"github.com/sbcinnovation/lmux/lmux/internal/tmux"
-	"github.com/sbcinnovation/lmux/lmux/internal/util"
-	buildinfo "github.com/sbcinnovation/lmux/lmux/internal/version"
+	cfg "github.com/sbcinnovation/lmux/internal/config"
+	"github.com/sbcinnovation/lmux/internal/tmux"
+	"github.com/sbcinnovation/lmux/internal/util"
+	buildinfo "github.com/sbcinnovation/lmux/internal/version"
 )
 
 var version = "0.1.0"

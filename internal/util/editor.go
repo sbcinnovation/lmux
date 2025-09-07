@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	cfg "github.com/sbcinnovation/lmux/lmux/internal/config"
+	cfg "github.com/sbcinnovation/lmux/internal/config"
 )
 
 // OpenInEditor opens the given file path in $EDITOR if set, otherwise uses open -t on macOS.
