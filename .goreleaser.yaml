@@ -1,0 +1,90 @@
+project_name: lmux
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: lmux
+    main: ./cmd/lmux
+    binary: lmux
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # ldflags:
+    #   - -s -w -X main.version={{ .Version }} -X github.com/sbcinnovation/lmux/lmux/internal/version.Commit={{ .Commit }} -X github.com/sbcinnovation/lmux/lmux/internal/version.Date={{ .Date }} -X github.com/sbcinnovation/lmux/lmux/internal/version.BuiltBy=goreleaser
+    ldflags:
+      - -s -w -X github.com/sbcinnovation/lmux/internal/version.Version={{ .Version }} -X github.com/sbcinnovation/lmux/internal/version.Commit={{ .Commit }} -X github.com/sbcinnovation/lmux/internal/version.Date={{ .Date }} -X github.com/sbcinnovation/lmux/internal/version.BuiltBy=goreleaser
+
+archives:
+  - id: archive
+    builds:
+      - lmux
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+brews:
+  - name: lmux
+    repository:
+      owner: sbcinnovation
+      name: homebrew-tap
+    directory: Formula
+    commit_author:
+      name: goreleaser
+      email: actions@github.com
+    homepage: https://github.com/sbcinnovation/lmux
+    description: "A fast, simple, cross-platform tmux session manager"
+    license: MIT
+    dependencies:
+      - name: tmux
+    test: |
+      system "#{bin}/lmux", "version"
+
+scoops:
+  - name: lmux
+    repository:
+      owner: sbcinnovation
+      name: scoop-bucket
+    homepage: https://github.com/sbcinnovation/lmux
+    description: "A fast, simple, cross-platform tmux session manager"
+    license: MIT
+
+nfpms:
+  - id: linux-packages
+    package_name: lmux
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats:
+      - deb
+      - rpm
+    maintainer: SBC Innovation <opensource@sbcinnovation.com>
+    description: A fast, simple, cross-platform tmux session manager
+    homepage: https://github.com/sbcinnovation/lmux
+    license: MIT
+    vendor: SBC Innovation
+    bindir: /usr/bin
+    dependencies:
+      - tmux
+
+release:
+  prerelease: auto
+
+snapshot:
+  name_template: "SNAPSHOT-{{ .ShortCommit }}"
