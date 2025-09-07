@@ -1,5 +1,7 @@
 # 🚀 lmux: A Fast Simple Cross Platform tmux Session Manager 🖥️
 
+*lmux = Load tmux*
+
 ![lmux example](docs/assets/mycoolproj.png)
 
 An open source session manager for tmux, which allows users to manage tmux sessions through simple TOML configuration files, written in Go.
