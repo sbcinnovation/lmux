@@ -1,5 +1,7 @@
 # 🚀 lmux: A Fast Simple Cross Platform tmux Session Manager 🖥️
 
+![lmux example](docs/assets/mycoolproj.png)
+
 An open source session manager for tmux, which allows users to manage tmux sessions through simple TOML configuration files, written in Go.
 
 **Why lmux?** 🤔
@@ -109,7 +111,6 @@ Notes:
   - `name = ["cmd1", "cmd2"]` (array of commands) inside an object
   - `name = { layout = L, root = PATH, panes = [...] }`
 - Panes accept string (single command), array (multiple commands), or `{ title = commands }`.
-
 
 ## Updates
 
