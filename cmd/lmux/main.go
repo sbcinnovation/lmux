@@ -12,6 +12,7 @@ import (
 	cfg "github.com/sbcinnovation/lmux/lmux/internal/config"
 	"github.com/sbcinnovation/lmux/lmux/internal/tmux"
 	"github.com/sbcinnovation/lmux/lmux/internal/util"
+	buildinfo "github.com/sbcinnovation/lmux/lmux/internal/version"
 )
 
 var version = "0.1.0"
@@ -38,13 +39,53 @@ func main() {
 }
 
 func newVersionCmd() *cobra.Command {
-	return &cobra.Command{
+	var check bool
+	var verbose bool
+	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print lmux version",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println(version)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if verbose {
+				extra := []string{}
+				if strings.TrimSpace(buildinfo.Commit) != "" {
+					extra = append(extra, fmt.Sprintf("commit=%s", buildinfo.Commit))
+				}
+				if strings.TrimSpace(buildinfo.Date) != "" {
+					extra = append(extra, fmt.Sprintf("date=%s", buildinfo.Date))
+				}
+				if strings.TrimSpace(buildinfo.BuiltBy) != "" {
+					extra = append(extra, fmt.Sprintf("builtBy=%s", buildinfo.BuiltBy))
+				}
+				if len(extra) > 0 {
+					fmt.Printf("%s (%s)\n", version, strings.Join(extra, ", "))
+				} else {
+					fmt.Println(version)
+				}
+			} else {
+				fmt.Println(version)
+			}
+
+			if check {
+				latest, update, url, err := util.CheckForUpdate("sbcinnovation/lmux", version)
+				if err != nil {
+					return fmt.Errorf("update check failed: %w", err)
+				}
+				if update {
+					if strings.TrimSpace(url) == "" {
+						fmt.Printf("update available: %s -> %s\n", version, latest)
+					} else {
+						fmt.Printf("update available: %s -> %s\n%s\n", version, latest, url)
+					}
+				} else {
+					fmt.Println("you're up to date")
+				}
+			}
+			return nil
 		},
 	}
+	cmd.Flags().BoolVar(&check, "check", false, "check for newer release on GitHub")
+	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "show extended build info")
+	return cmd
 }
 
 func newDoctorCmd() *cobra.Command {
