@@ -64,6 +64,7 @@ scoops:
       owner: sbcinnovation
       name: scoop-bucket
       branch: main
+    directory: bucket
     commit_author:
       name: goreleaser
       email: actions@github.com
