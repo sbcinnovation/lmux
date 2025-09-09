@@ -124,6 +124,10 @@ lmux version --check    # queries GitHub for newer release
 lmux version -v         # include build metadata (commit/date)
 ```
 
+## A note for Windows OS users.
+
+At this time tmux does not have native support on WindowsOS. If you want to use tmux, try using [WSL2](https://github.com/microsoft/WSL). We'll still include a binary in the releases for WindowsOS incase things change.
+
 ## Contributing
 
 We welcome pull requests. If you're passionate about lmux and want to help long-term, we're open to adding maintainers, feel free to open an issue to introduce yourself!
