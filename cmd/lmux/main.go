@@ -50,11 +50,7 @@ const helpTemplate = `{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}
 
 {{if .HasAvailableSubCommands}}Available Commands:
 {{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
-  {{- $name := .Name -}}
-  {{- if .Aliases -}}
-    {{- $name = printf "%s (%s)" .Name (join .Aliases ", ") -}}
-  {{- end -}}
-  {{rpad $name .NamePadding}} {{.Short}}
+  {{.Name}}{{if .Aliases}} ({{range $i, $alias := .Aliases}}{{if $i}}, {{end}}{{$alias}}{{end}}){{end}}: {{.Short}}
 {{end}}{{end}}
 
 {{end}}{{if .HasAvailableLocalFlags}}Flags:
