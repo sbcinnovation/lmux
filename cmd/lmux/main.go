@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -23,6 +25,7 @@ func main() {
 		Short: "lmux: simple tmux project runner",
 		Long:  "lmux is a lightweight tmux project runner inspired by tmuxinator.",
 	}
+	rootCmd.SetHelpTemplate(helpTemplate)
 
 	rootCmd.AddCommand(newVersionCmd())
 	rootCmd.AddCommand(newDoctorCmd())
@@ -31,12 +34,41 @@ func main() {
 	rootCmd.AddCommand(newEditorCmd())
 	rootCmd.AddCommand(newListCmd())
 	rootCmd.AddCommand(newStartCmd())
+	rootCmd.AddCommand(newDetachCmd())
+	rootCmd.AddCommand(newKillCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
+
+const helpTemplate = `{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}
+
+{{end}}Usage:
+  {{.UseLine}}
+
+{{if .HasAvailableSubCommands}}Available Commands:
+{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+  {{- $name := .Name -}}
+  {{- if .Aliases -}}
+    {{- $name = printf "%s (%s)" .Name (join .Aliases ", ") -}}
+  {{- end -}}
+  {{rpad $name .NamePadding}} {{.Short}}
+{{end}}{{end}}
+
+{{end}}{{if .HasAvailableLocalFlags}}Flags:
+{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}
+
+{{end}}{{if .HasAvailableInheritedFlags}}Global Flags:
+{{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}
+
+{{end}}{{if .HasExample}}Examples:
+{{.Example}}
+
+{{end}}{{if .HasAvailableSubCommands}}
+Use "{{.CommandPath}} [command] --help" for more information about a command.
+{{end}}`
 
 func newVersionCmd() *cobra.Command {
 	var check bool
@@ -226,6 +258,39 @@ func newStartCmd() *cobra.Command {
 	}
 	cmd.Flags().BoolVar(&attach, "attach", true, "attach to the session after starting")
 	return cmd
+}
+
+func newDetachCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:     "detach",
+		Aliases: []string{"d"},
+		Short:   "Detach the current tmux client",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return tmux.DetachClient()
+		},
+	}
+}
+
+func newKillCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:     "kill-server",
+		Aliases: []string{"k"},
+		Short:   "Kill the tmux server (all sessions)",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Fprint(os.Stdout, "Kill tmux server and all sessions? [y/N]: ")
+			input, err := reader.ReadString('\n')
+			if err != nil && !errors.Is(err, io.EOF) {
+				return fmt.Errorf("confirmation failed: %w", err)
+			}
+			resp := strings.ToLower(strings.TrimSpace(input))
+			if resp != "y" && resp != "yes" {
+				fmt.Fprintln(os.Stdout, "aborted")
+				return nil
+			}
+			return tmux.KillServer()
+		},
+	}
 }
 
 func sanitizeName(name string) string {

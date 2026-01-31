@@ -30,6 +30,25 @@ func TmuxVersion() (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
+// DetachClient detaches the current tmux client.
+func DetachClient() error {
+	if os.Getenv("TMUX") == "" {
+		return errors.New("not inside a tmux client")
+	}
+	if err := CheckTmuxInstalled(); err != nil {
+		return err
+	}
+	return run("tmux", "detach-client")
+}
+
+// KillServer stops the tmux server and all sessions.
+func KillServer() error {
+	if err := CheckTmuxInstalled(); err != nil {
+		return err
+	}
+	return run("tmux", "kill-server")
+}
+
 // StartProject creates a tmux session for the given project and optionally attaches.
 func StartProject(project cfg.Project, attach bool) error {
 	if err := CheckTmuxInstalled(); err != nil {

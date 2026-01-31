@@ -68,6 +68,8 @@ On macOS, lmux uses `~/.config/lmux` as the config directory.
 - Edit a project: `lmux edit myproj`
 - List projects: `lmux list`
 - Start a project: `lmux start myproj`
+- Detach current client: `lmux detach` (or `lmux d`)
+- Kill tmux server: `lmux kill-server` (or `lmux k`, asks for confirmation)
 - Check environment: `lmux doctor`
 - Set or show editor: `lmux editor [value]`
 
