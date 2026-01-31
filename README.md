@@ -64,14 +64,17 @@ sudo mv ./lmux /usr/local/bin/  # or any directory in PATH
 
 On macOS, lmux uses `~/.config/lmux` as the config directory.
 
-- Create a project: `lmux init myproj` (opens in `$EDITOR`)
+### Use commands
+
+- Create a project: `lmux init myproj`
 - Edit a project: `lmux edit myproj`
-- List projects: `lmux list`
-- Start a project: `lmux start myproj`
-- Detach current client: `lmux detach` (or `lmux d`)
-- Kill tmux server: `lmux kill-server` (or `lmux k`, asks for confirmation)
-- Check environment: `lmux doctor`
 - Set or show editor: `lmux editor [value]`
+- List projects: `lmux list` (shortcut: `lmux ls`)
+- Start a project: `lmux start myproj`
+- Detach current client: `lmux detach` (shortcut: `lmux d`)
+- Kill tmux server: `lmux kill-server` (shortcut: `lmux k`, asks for confirmation)
+- Check environment: `lmux doctor`
+- Print version: `lmux version`
 
 ### Editor
 
