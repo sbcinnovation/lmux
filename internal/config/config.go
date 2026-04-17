@@ -225,3 +225,22 @@ func parsePanes(raw any) ([]Pane, error) {
 	}
 	return panes, nil
 }
+
+// ExpandPath expands ~ and environment variables in a path-like string.
+func ExpandPath(p string) string {
+	p = strings.TrimSpace(p)
+	if p == "" {
+		return p
+	}
+	if strings.HasPrefix(p, "~") {
+		if home, err := os.UserHomeDir(); err == nil {
+			if p == "~" {
+				p = home
+			} else if strings.HasPrefix(p, "~/") {
+				p = filepath.Join(home, p[2:])
+			}
+		}
+	}
+	p = os.ExpandEnv(p)
+	return p
+}

@@ -230,6 +230,7 @@ func newListCmd() *cobra.Command {
 
 func newStartCmd() *cobra.Command {
 	var attach bool
+	var rootOverride string
 	cmd := &cobra.Command{
 		Use:   "start [name]",
 		Short: "Start a tmux session for the project",
@@ -243,6 +244,9 @@ func newStartCmd() *cobra.Command {
 			if project.Name == "" {
 				project.Name = name
 			}
+			if cmd.Flags().Changed("root") {
+				project.Root = cfg.ExpandPath(rootOverride)
+			}
 
 			// Default to attach if not specified via flag
 			if !cmd.Flags().Changed("attach") {
@@ -253,6 +257,7 @@ func newStartCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().BoolVar(&attach, "attach", true, "attach to the session after starting")
+	cmd.Flags().StringVarP(&rootOverride, "root", "C", "", "override the project root directory from the config")
 	return cmd
 }
 

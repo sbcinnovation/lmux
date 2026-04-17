@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -82,7 +81,7 @@ func StartProject(project cfg.Project, attach bool) error {
 		firstRoot = project.Root
 	}
 	if strings.TrimSpace(firstRoot) != "" {
-		createArgs = append(createArgs, "-c", expandPath(firstRoot))
+		createArgs = append(createArgs, "-c", cfg.ExpandPath(firstRoot))
 	}
 	if project.TmuxOptions != "" {
 		// Tmux options like -f need to be passed when invoking tmux, not subcommand
@@ -112,7 +111,7 @@ func StartProject(project cfg.Project, attach bool) error {
 			winRoot = project.Root
 		}
 		if strings.TrimSpace(winRoot) != "" {
-			args = append(args, "-c", expandPath(winRoot))
+			args = append(args, "-c", cfg.ExpandPath(winRoot))
 		}
 		if err := run(tmuxCmd, args...); err != nil {
 			return fmt.Errorf("failed creating window %s: %w", w.Name, err)
@@ -219,25 +218,6 @@ func run(name string, args ...string) error {
 		return err
 	}
 	return nil
-}
-
-// expandPath expands ~ and environment variables in a path-like string.
-func expandPath(p string) string {
-	p = strings.TrimSpace(p)
-	if p == "" {
-		return p
-	}
-	if strings.HasPrefix(p, "~") {
-		if home, err := os.UserHomeDir(); err == nil {
-			if p == "~" {
-				p = home
-			} else if strings.HasPrefix(p, "~/") {
-				p = filepath.Join(home, p[2:])
-			}
-		}
-	}
-	p = os.ExpandEnv(p)
-	return p
 }
 
 // getPaneBaseIndex returns tmux's pane-base-index (default 0 if unknown).
