@@ -11,21 +11,17 @@ TARGET_GOOS=${GOOS:-$(go env GOOS)}
 TARGET_GOARCH=${GOARCH:-$(go env GOARCH)}
 
 # Determine install directory
-# Priority: INSTALL_DIR > PREFIX/bin > OS default
+# Priority: INSTALL_DIR > PREFIX/bin > existing lmux on PATH > ~/.local/bin > /usr/local/bin
 if [ "${INSTALL_DIR:-}" != "" ]; then
   DEST_DIR="$INSTALL_DIR"
 elif [ "${PREFIX:-}" != "" ]; then
   DEST_DIR="$PREFIX/bin"
+elif command -v lmux >/dev/null 2>&1; then
+  DEST_DIR=$(dirname "$(command -v lmux)")
+elif [ -n "${HOME:-}" ]; then
+  DEST_DIR="$HOME/.local/bin"
 else
-  case "$TARGET_GOOS" in
-    darwin|linux)
-      DEST_DIR="/usr/local/bin"
-      ;;
-    *)
-      # Fallback; user may adjust with INSTALL_DIR or PREFIX
-      DEST_DIR="/usr/local/bin"
-      ;;
-  esac
+  DEST_DIR="/usr/local/bin"
 fi
 
 EXT=""
