@@ -48,6 +48,37 @@ func KillSession(session string) error {
 	return run("tmux", "kill-session", "-t", session)
 }
 
+// KillServer stops the tmux server and all sessions.
+func KillServer() error {
+	if err := CheckTmuxInstalled(); err != nil {
+		return err
+	}
+	return run("tmux", "kill-server")
+}
+
+// ListSessions returns the names of active tmux sessions.
+func ListSessions() ([]string, error) {
+	if err := CheckTmuxInstalled(); err != nil {
+		return nil, err
+	}
+
+	out, err := exec.Command("tmux", "list-sessions", "-F", "#{session_name}").CombinedOutput()
+	if err != nil {
+		if strings.Contains(string(out), "no server running") {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("list tmux sessions: %w: %s", err, strings.TrimSpace(string(out)))
+	}
+
+	var sessions []string
+	for _, session := range strings.Split(string(out), "\n") {
+		if session = strings.TrimSpace(session); session != "" {
+			sessions = append(sessions, session)
+		}
+	}
+	return sessions, nil
+}
+
 // StartProject creates a tmux session for the given project and optionally attaches.
 func StartProject(project cfg.Project, attach bool) error {
 	tmuxCmd := project.TmuxCommand

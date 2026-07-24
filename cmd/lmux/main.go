@@ -36,6 +36,7 @@ func main() {
 	rootCmd.AddCommand(newStartCmd())
 	rootCmd.AddCommand(newDetachCmd())
 	rootCmd.AddCommand(newKillCmd())
+	rootCmd.AddCommand(newKillAllCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -292,14 +293,17 @@ func newDetachCmd() *cobra.Command {
 
 func newKillCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:     "kill [name]",
+		Use:     "kill [name|all]",
 		Aliases: []string{"k"},
-		Short:   "Kill a project's tmux session",
+		Short:   "Kill a project's tmux session or all sessions",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := sanitizeName(args[0])
 			if name == "" {
 				return errors.New("invalid project name")
+			}
+			if name == "all" {
+				return killAllSessions()
 			}
 			project, err := cfg.LoadProject(name)
 			if err != nil {
@@ -309,20 +313,77 @@ func newKillCmd() *cobra.Command {
 				project.Name = name
 			}
 
-			reader := bufio.NewReader(os.Stdin)
-			fmt.Fprintf(os.Stdout, "Kill tmux session for %q? [y/N]: ", project.Name)
-			input, err := reader.ReadString('\n')
-			if err != nil && !errors.Is(err, io.EOF) {
-				return fmt.Errorf("confirmation failed: %w", err)
+			confirmed, err := confirm(fmt.Sprintf("Kill tmux session for %q?", project.Name))
+			if err != nil {
+				return err
 			}
-			resp := strings.ToLower(strings.TrimSpace(input))
-			if resp != "y" && resp != "yes" {
-				fmt.Fprintln(os.Stdout, "aborted")
+			if !confirmed {
 				return nil
 			}
-			return tmux.KillSession(project.Name)
+			if err := tmux.KillSession(project.Name); err != nil {
+				return err
+			}
+			return showActiveProjects()
 		},
 	}
+}
+
+func newKillAllCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:     "kill-all",
+		Aliases: []string{"kill-server"},
+		Short:   "Kill all tmux sessions",
+		Args:    cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return killAllSessions()
+		},
+	}
+}
+
+func killAllSessions() error {
+	confirmed, err := confirm("Kill tmux server and all sessions?")
+	if err != nil {
+		return err
+	}
+	if !confirmed {
+		return nil
+	}
+	if err := tmux.KillServer(); err != nil {
+		return err
+	}
+	return showActiveProjects()
+}
+
+func confirm(prompt string) (bool, error) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Fprintf(os.Stdout, "%s [y/N]: ", prompt)
+	input, err := reader.ReadString('\n')
+	if err != nil && !errors.Is(err, io.EOF) {
+		return false, fmt.Errorf("confirmation failed: %w", err)
+	}
+	resp := strings.ToLower(strings.TrimSpace(input))
+	if resp != "y" && resp != "yes" {
+		fmt.Fprintln(os.Stdout, "aborted")
+		return false, nil
+	}
+	return true, nil
+}
+
+func showActiveProjects() error {
+	sessions, err := tmux.ListSessions()
+	if err != nil {
+		return err
+	}
+	if len(sessions) == 0 {
+		fmt.Fprintln(os.Stdout, "No active projects loaded.")
+		return nil
+	}
+
+	fmt.Fprintln(os.Stdout, "Active projects loaded:")
+	for _, session := range sessions {
+		fmt.Fprintf(os.Stdout, "- %s\n", session)
+	}
+	return nil
 }
 
 func sanitizeName(name string) string {

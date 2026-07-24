@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -30,11 +31,18 @@ app = "true"
 	if err := os.MkdirAll(binDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	tmuxScript := "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$LMUX_TMUX_ARGS\"\n"
+	tmuxScript := `#!/bin/sh
+if [ "$1" = "list-sessions" ]; then
+  printf '%s\n' "$LMUX_TMUX_SESSIONS"
+  exit 0
+fi
+printf '%s\n' "$@" >> "$LMUX_TMUX_ARGS"
+`
 	if err := os.WriteFile(filepath.Join(binDir, "tmux"), []byte(tmuxScript), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("LMUX_TMUX_SESSIONS", "remaining-project")
 
 	input, err := os.CreateTemp(home, "input")
 	if err != nil {
@@ -53,7 +61,8 @@ app = "true"
 
 	cmd := newKillCmd()
 	cmd.SetArgs([]string{"project"})
-	if err := cmd.Execute(); err != nil {
+	output, err := captureStdout(t, cmd.Execute)
+	if err != nil {
 		t.Fatal(err)
 	}
 
@@ -64,6 +73,84 @@ app = "true"
 	if got, want := string(args), "kill-session\n-t\nproject-session\n"; got != want {
 		t.Fatalf("tmux arguments = %q, want %q", strings.TrimSpace(got), strings.TrimSpace(want))
 	}
+	if !strings.Contains(output, "Active projects loaded:\n- remaining-project\n") {
+		t.Fatalf("output = %q, want remaining active project", output)
+	}
+}
+
+func TestKillAllCmdKillsTmuxServer(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("LMUX_TMUX_ARGS", filepath.Join(home, "tmux-args"))
+	binDir := filepath.Join(home, "bin")
+	if err := os.MkdirAll(binDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	tmuxScript := `#!/bin/sh
+if [ "$1" = "list-sessions" ]; then
+  echo "no server running" >&2
+  exit 1
+fi
+printf '%s\n' "$@" > "$LMUX_TMUX_ARGS"
+`
+	if err := os.WriteFile(filepath.Join(binDir, "tmux"), []byte(tmuxScript), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	input, err := os.CreateTemp(home, "input")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer input.Close()
+	if _, err := input.WriteString("yes\n"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := input.Seek(0, 0); err != nil {
+		t.Fatal(err)
+	}
+	originalStdin := os.Stdin
+	os.Stdin = input
+	defer func() { os.Stdin = originalStdin }()
+
+	cmd := newKillAllCmd()
+	output, err := captureStdout(t, cmd.Execute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	args, err := os.ReadFile(os.Getenv("LMUX_TMUX_ARGS"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := string(args), "kill-server\n"; got != want {
+		t.Fatalf("tmux arguments = %q, want %q", got, want)
+	}
+	if !strings.Contains(output, "No active projects loaded.") {
+		t.Fatalf("output = %q, want no active projects message", output)
+	}
+}
+
+func captureStdout(t *testing.T, fn func() error) (string, error) {
+	t.Helper()
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := os.Stdout
+	os.Stdout = writer
+	defer func() { os.Stdout = original }()
+
+	runErr := fn()
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	output, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := reader.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return string(output), runErr
 }
 
 func TestStartCmdHonorsDisabledAttachFromProject(t *testing.T) {
