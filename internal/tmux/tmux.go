@@ -40,12 +40,12 @@ func DetachClient() error {
 	return run("tmux", "detach-client")
 }
 
-// KillServer stops the tmux server and all sessions.
-func KillServer() error {
+// KillSession stops the named tmux session.
+func KillSession(session string) error {
 	if err := CheckTmuxInstalled(); err != nil {
 		return err
 	}
-	return run("tmux", "kill-server")
+	return run("tmux", "kill-session", "-t", session)
 }
 
 // StartProject creates a tmux session for the given project and optionally attaches.

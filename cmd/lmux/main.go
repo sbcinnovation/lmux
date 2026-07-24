@@ -286,12 +286,22 @@ func newDetachCmd() *cobra.Command {
 
 func newKillCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:     "kill-server",
+		Use:     "kill [name]",
 		Aliases: []string{"k"},
-		Short:   "Kill the tmux server (all sessions)",
+		Short:   "Kill a project's tmux session",
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			name := sanitizeName(args[0])
+			project, err := cfg.LoadProject(name)
+			if err != nil {
+				return err
+			}
+			if project.Name == "" {
+				project.Name = name
+			}
+
 			reader := bufio.NewReader(os.Stdin)
-			fmt.Fprint(os.Stdout, "Kill tmux server and all sessions? [y/N]: ")
+			fmt.Fprintf(os.Stdout, "Kill tmux session for %q? [y/N]: ", project.Name)
 			input, err := reader.ReadString('\n')
 			if err != nil && !errors.Is(err, io.EOF) {
 				return fmt.Errorf("confirmation failed: %w", err)
@@ -301,7 +311,7 @@ func newKillCmd() *cobra.Command {
 				fmt.Fprintln(os.Stdout, "aborted")
 				return nil
 			}
-			return tmux.KillServer()
+			return tmux.KillSession(project.Name)
 		},
 	}
 }
