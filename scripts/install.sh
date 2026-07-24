@@ -68,4 +68,17 @@ fi
 
 echo "Installed: $DEST"
 
+# If another lmux appears earlier on PATH, the user may still run an old binary.
+if command -v lmux >/dev/null 2>&1; then
+  first=$(command -v lmux)
+  if [ "$first" != "$DEST" ] && [ -n "$first" ]; then
+    echo "" >&2
+    echo "Note: the first \`lmux\` on your PATH is:" >&2
+    echo "  $first" >&2
+    echo "The binary just installed is:" >&2
+    echo "  $DEST" >&2
+    echo "To use this build by default, either remove or replace the other copy, or run:" >&2
+    echo "  INSTALL_DIR=$(dirname "$first") make install" >&2
+  fi
+fi
 

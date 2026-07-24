@@ -234,7 +234,19 @@ func newStartCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start [name]",
 		Short: "Start a tmux session for the project",
-		Args:  cobra.ExactArgs(1),
+		Long: `Start loads ~/.config/lmux/<name>.toml and creates or attaches to that session.
+
+The project name is always required. Use --root only to override the "root" path from the config for this run.`,
+		Example: `  lmux start myapp --root ~/dev/sbc/sbc-nextchess`,
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return fmt.Errorf("missing project name (the TOML in ~/.config/lmux/<name>.toml); example: %s myapp --root ~/path", cmd.CommandPath())
+			}
+			if len(args) > 1 {
+				return fmt.Errorf("expected one project name, got %d extra arguments", len(args)-1)
+			}
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := sanitizeName(args[0])
 			project, err := cfg.LoadProject(name)
