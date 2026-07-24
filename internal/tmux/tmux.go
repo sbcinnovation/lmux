@@ -50,18 +50,20 @@ func KillSession(session string) error {
 
 // StartProject creates a tmux session for the given project and optionally attaches.
 func StartProject(project cfg.Project, attach bool) error {
-	if err := CheckTmuxInstalled(); err != nil {
-		return err
-	}
-
 	tmuxCmd := project.TmuxCommand
 	if tmuxCmd == "" {
 		tmuxCmd = "tmux"
 	}
+	if _, err := exec.LookPath(tmuxCmd); err != nil {
+		return fmt.Errorf("tmux command %q not found in PATH", tmuxCmd)
+	}
 
 	// If session already exists, attach and return
 	if hasSession(tmuxCmd, project.Name) {
-		return runAttach(tmuxCmd, project.Name)
+		if attach {
+			return runAttach(tmuxCmd, project.Name)
+		}
+		return nil
 	}
 
 	// Create detached session with first window

@@ -30,14 +30,11 @@ func OpenInEditor(path string) error {
 	}
 	if editor != "" {
 		// Support EDITOR commands with arguments (e.g., "code -w")
-		if strings.Contains(editor, " ") {
-			cmd := exec.Command("sh", "-c", editor+" "+fmt.Sprintf("%q", path))
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			return cmd.Run()
+		parts := strings.Fields(editor)
+		if len(parts) == 0 {
+			return fmt.Errorf("invalid editor command")
 		}
-		cmd := exec.Command(editor, path)
+		cmd := exec.Command(parts[0], append(parts[1:], path)...)
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -50,7 +47,7 @@ func OpenInEditor(path string) error {
 			settings.Editor = editor
 			_ = cfg.SaveSettings(settings)
 		}
-		cmd := exec.Command("sh", "-c", editor+" "+fmt.Sprintf("%q", path))
+		cmd := exec.Command("open", "-t", path)
 		return cmd.Run()
 	}
 	return fmt.Errorf("no editor found; set $EDITOR or install 'open'")

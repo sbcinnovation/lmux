@@ -125,7 +125,7 @@ func parseWindows(raw []any) ([]Window, error) {
 	for _, item := range raw {
 		// Each item is expected to be a map with a single key: window name -> value
 		m, ok := item.(map[string]any)
-		if !ok || len(m) == 0 {
+		if !ok || len(m) != 1 {
 			return nil, fmt.Errorf("invalid window entry: %T", item)
 		}
 		var name string
@@ -196,6 +196,9 @@ func parsePanes(raw any) ([]Pane, error) {
 			panes = append(panes, Pane{Commands: cmds})
 		case map[string]any:
 			// { title: commands }
+			if len(v) != 1 {
+				return nil, fmt.Errorf("pane entry must contain exactly one title, got %d", len(v))
+			}
 			var title string
 			var commands any
 			for k, vv := range v {

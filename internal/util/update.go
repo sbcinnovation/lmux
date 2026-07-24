@@ -84,14 +84,7 @@ func compareSemver(a, b string) int {
 	if bPre == "" { // b is stable, a is pre
 		return -1
 	}
-	// Simple prerelease lexical compare
-	if aPre < bPre {
-		return -1
-	}
-	if aPre > bPre {
-		return 1
-	}
-	return 0
+	return comparePrerelease(aPre, bPre)
 }
 
 func splitPrerelease(v string) (main string, pre string) {
@@ -119,4 +112,54 @@ func splitInts(v string) [3]int {
 		out[i] = n
 	}
 	return out
+}
+
+// comparePrerelease implements SemVer prerelease precedence. Numeric identifiers
+// compare numerically and sort before non-numeric identifiers.
+func comparePrerelease(a, b string) int {
+	aParts := strings.Split(a, ".")
+	bParts := strings.Split(b, ".")
+	for i := 0; i < len(aParts) && i < len(bParts); i++ {
+		aPart, bPart := aParts[i], bParts[i]
+		aNumber, aIsNumber := prereleaseNumber(aPart)
+		bNumber, bIsNumber := prereleaseNumber(bPart)
+		switch {
+		case aIsNumber && bIsNumber:
+			if aNumber < bNumber {
+				return -1
+			}
+			if aNumber > bNumber {
+				return 1
+			}
+		case aIsNumber:
+			return -1
+		case bIsNumber:
+			return 1
+		case aPart < bPart:
+			return -1
+		case aPart > bPart:
+			return 1
+		}
+	}
+	if len(aParts) < len(bParts) {
+		return -1
+	}
+	if len(aParts) > len(bParts) {
+		return 1
+	}
+	return 0
+}
+
+func prereleaseNumber(value string) (int, bool) {
+	if value == "" {
+		return 0, false
+	}
+	number := 0
+	for _, ch := range value {
+		if ch < '0' || ch > '9' {
+			return 0, false
+		}
+		number = number*10 + int(ch-'0')
+	}
+	return number, true
 }

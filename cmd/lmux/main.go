@@ -17,7 +17,7 @@ import (
 	buildinfo "github.com/sbcinnovation/lmux/internal/version"
 )
 
-var version = "0.1.0"
+var version = buildinfo.Version
 
 func main() {
 	rootCmd := &cobra.Command{
@@ -180,6 +180,9 @@ func newEditCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := sanitizeName(args[0])
+			if name == "" {
+				return errors.New("invalid project name")
+			}
 			path := cfg.ProjectFilePath(name)
 			if _, err := os.Stat(path); err != nil {
 				return fmt.Errorf("project not found: %s", path)
@@ -249,6 +252,9 @@ The project name is always required. Use --root only to override the "root" path
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := sanitizeName(args[0])
+			if name == "" {
+				return errors.New("invalid project name")
+			}
 			project, err := cfg.LoadProject(name)
 			if err != nil {
 				return err
@@ -260,9 +266,9 @@ The project name is always required. Use --root only to override the "root" path
 				project.Root = cfg.ExpandPath(rootOverride)
 			}
 
-			// Default to attach if not specified via flag
+			// Use the config value unless the flag explicitly overrides it.
 			if !cmd.Flags().Changed("attach") {
-				attach = true
+				attach = *project.Attach
 			}
 
 			return tmux.StartProject(project, attach)
@@ -292,6 +298,9 @@ func newKillCmd() *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := sanitizeName(args[0])
+			if name == "" {
+				return errors.New("invalid project name")
+			}
 			project, err := cfg.LoadProject(name)
 			if err != nil {
 				return err
@@ -320,6 +329,9 @@ func sanitizeName(name string) string {
 	name = strings.TrimSpace(name)
 	name = strings.TrimSuffix(name, filepath.Ext(name))
 	name = strings.ReplaceAll(name, " ", "-")
+	if name == "" || name == "." || name == ".." || strings.ContainsAny(name, `/\`) {
+		return ""
+	}
 	return name
 }
 
