@@ -132,7 +132,7 @@ lmux version -v         # include build metadata (commit/date)
 
 ## A note for Windows OS users.
 
-At this time tmux does not have native support on WindowsOS. If you want to use tmux, try using [WSL2](https://github.com/microsoft/WSL). We'll still include a binary in the releases for WindowsOS incase things change.
+tmux does not have native support on Windows. For native Windows use, we recommend [psmux](https://github.com/psmux/psmux)—a tmux-compatible multiplexer that works well with lmux. Alternatively, you can use [WSL2](https://github.com/microsoft/WSL). We include a Windows binary in releases for both paths.
 
 ## Contributing
 
