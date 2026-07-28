@@ -197,19 +197,27 @@ func setupWindow(tmuxCmd, session string, index int, w cfg.Window) error {
 				continue
 			}
 			for _, cmd := range pane.Commands {
-				if err := run(tmuxCmd, "send-keys", "-t", fmt.Sprintf("%s.%d", target, paneBase+paneIndex), cmd, "C-m"); err != nil {
+				if err := sendPaneCommand(tmuxCmd, fmt.Sprintf("%s.%d", target, paneBase+paneIndex), cmd); err != nil {
 					return err
 				}
 			}
 		}
 	} else if len(w.Commands) > 0 {
 		for _, cmd := range w.Commands {
-			if err := run(tmuxCmd, "send-keys", "-t", target, cmd, "C-m"); err != nil {
+			if err := sendPaneCommand(tmuxCmd, target, cmd); err != nil {
 				return err
 			}
 		}
 	}
 	return nil
+}
+
+// sendPaneCommand types a command into a pane and submits it.
+// Use Enter instead of C-m: on Windows psmux, C-m sends Ctrl+M (\r) as literal
+// input (^M) rather than the Enter key.
+func sendPaneCommand(tmuxCmd, target, cmd string) error {
+	cmd = strings.ReplaceAll(cmd, "\r", "")
+	return run(tmuxCmd, "send-keys", "-t", target, cmd, "Enter")
 }
 
 // windowTarget returns a tmux target for the window, preferring name to avoid base-index issues.
